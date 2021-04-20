@@ -4,17 +4,17 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ComboBoxComponent } from './components/table/combo-box/combo-box.component';
+import { WidgetsModule } from './widgets-module/widgets.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ComboBoxComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule
+    FormsModule,
+    WidgetsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

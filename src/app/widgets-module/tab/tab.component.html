@@ -1,0 +1,27 @@
+<!-- Tab links -->
+<div class="tab">
+    <button  
+        *ngFor="let tab of tabs" 
+        class="tablinks" 
+        (click)="setList(tab.id)"
+        [ngClass]="{active: list===tab.id}"
+    >
+        {{tab.title}}
+    </button>
+</div>
+  
+<!-- Tab content -->
+
+<div 
+    *ngFor="let tab of tabs"  
+    class="tabcontent"
+    [ngClass]="{visible: list===tab.id, invisible: list!==tab.id}"
+>
+    <ng-template appRef></ng-template>
+</div>
+
+
+
+
+
+  
