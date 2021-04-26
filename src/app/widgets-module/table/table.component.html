@@ -1,1 +1,19 @@
-<p>table works!</p>
+<table>
+    <thead>
+        <tr>
+            <th *ngFor="let colHead of header">{{colHead}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of rows; let idxRow = index" >
+            <td *ngFor="let column of row.columns; let idxCol = index">
+                <ng-template [appRef]="column.component" [row]="idxRow" [column]="idxCol"></ng-template>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<button (click)="addRow()">Добавить строку</button>
+<button (click)="removeRow()">Удалить строку</button>
+<button (click)="addRow(2)">Добавить строку на второе место</button>
+<button (click)="removeRow(2)">Удалить строку со второго места</button>

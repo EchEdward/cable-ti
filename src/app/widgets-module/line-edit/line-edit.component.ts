@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-line-edit',
@@ -7,9 +8,18 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LineEditComponent implements OnInit {
 
+  @Input() eventStream$!: Subject<string>;
+
   constructor() { }
 
   ngOnInit(): void {
+  }
+
+  focusOut(): void {
+    console.log('aaaaaaaaaaa');
+    if (this.eventStream$) {
+      this.eventStream$.next('test');
+    }
   }
 
 }

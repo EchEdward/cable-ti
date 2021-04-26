@@ -1,10 +1,14 @@
 import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ComboBoxComponent } from '../combo-box/combo-box.component';
 import { RefDirective } from '../directives/ref.directive';
+import { TableComponent } from '../table/table.component';
 
-interface List {
+
+interface Tab {
   id: number;
   title: string;
+  component: any;
+  example?: any;
 }
 
 @Component({
@@ -14,10 +18,10 @@ interface List {
 })
 export class TabComponent implements OnInit, AfterViewInit {
 
-  tabs: List[] = [
-    {id: 1, title: 'One'},
-    {id: 2, title: 'Two'},
-    {id: 3, title: 'Tree'},
+  tabs: Tab[] = [
+    {id: 1, title: 'One', component: TableComponent},
+    {id: 2, title: 'Two', component: ComboBoxComponent},
+    {id: 3, title: 'Tree', component: ComboBoxComponent},
   ];
 
   list = this.tabs.length;
@@ -36,9 +40,16 @@ export class TabComponent implements OnInit, AfterViewInit {
     // setTimeout use for not throw error
     setTimeout(() => {
       for (const ref of this.refDirList) {
-        const modalFactory = this.resolver.resolveComponentFactory(ComboBoxComponent);
         ref.containerRef.clear();
-        ref.containerRef.createComponent(modalFactory);
+        const componentRef = ref.containerRef.createComponent(
+          this.resolver.resolveComponentFactory(ref.component)
+        );
+        const tabsIdx = this.tabs.findIndex((tab: Tab) => {
+          return tab.id === ref.ID;
+        });
+        this.tabs[tabsIdx].example = componentRef;
+        // задание свойств в Input
+        // componentRef.instance.data
       }
     }, 0);
   }

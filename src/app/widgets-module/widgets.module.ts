@@ -7,6 +7,7 @@ import { TableComponent } from './table/table.component';
 import { LineEditComponent } from './line-edit/line-edit.component';
 import { CheckBoxComponent } from './check-box/check-box.component';
 import { RefDirective } from './directives/ref.directive';
+import { LabelComponent } from './label/label.component';
 
 
 
@@ -18,7 +19,8 @@ import { RefDirective } from './directives/ref.directive';
       TabComponent,
       LineEditComponent,
       CheckBoxComponent,
-      RefDirective
+      RefDirective,
+      LabelComponent
   ],
   imports: [
     CommonModule,
