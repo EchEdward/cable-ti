@@ -1,9 +1,11 @@
 import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ComboBoxComponent } from '../combo-box/combo-box.component';
-import { RefDirective } from '../directives/ref.directive';
 import { LabelComponent } from '../label/label.component';
 import { LineEditComponent } from '../line-edit/line-edit.component';
+import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
+import { WidgetEvent } from '../interfaces/event-interface';
+import { NumericDirective } from '../directives/numeric.directive';
 
 
 interface TableItem {
@@ -13,7 +15,6 @@ interface TableItem {
 }
 
 interface TableRow {
-  id: number;
   columns: TableItem[];
 }
 
@@ -24,16 +25,13 @@ interface TableRow {
 })
 export class TableComponent implements OnInit, AfterViewInit {
 
-  private idSet: Set<number> = new Set();
-  private minId = 0;
-  private maxId = 1000000000000;
 
-  eventStream$: Subject<string> = new Subject();
+  eventStream$: Subject<WidgetEvent> = new Subject();
 
   header: string[] = ['1', '2', '3'];
   rows: TableRow[] = [];
 
-  @ViewChildren(RefDirective) refDirList!: QueryList<RefDirective>;
+  @ViewChildren(TableCellRefDirective) refDirList!: QueryList<TableCellRefDirective>;
 
   constructor(private resolver: ComponentFactoryResolver) {
     // tslint:disable-next-line: deprecation
@@ -58,6 +56,9 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.rows[ref.row].columns[ref.column].status = 'none';
           this.rows[ref.row].columns[ref.column].example = componentRef;
           componentRef.instance.eventStream$ = this.eventStream$;
+          componentRef.instance.tableCellRef = ref;
+          // const num: NumericDirective = new NumericDirective(componentRef.location);
+
         }
         // задание свойств в Input
         // componentRef.instance.data .eventStream$ = this.eventStream$;
@@ -66,15 +67,14 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   addRow(pos = -1): void {
-    const id = this.getId();
     if (pos >= 0) {
-      this.rows.splice(pos, 0, {id, columns: [
+      this.rows.splice(pos, 0, {columns: [
         {component: LabelComponent, status: 'create'},
         {component: ComboBoxComponent, status: 'create'},
         {component: LineEditComponent, status: 'create'}
       ]});
     } else {
-      this.rows.push({id, columns: [
+      this.rows.push({columns: [
         {component: LabelComponent, status: 'create'},
         {component: ComboBoxComponent, status: 'create'},
         {component: LineEditComponent, status: 'create'}
@@ -90,21 +90,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     } else {
       row = this.rows.pop();
     }
-    if (row) {
-      this.idSet.delete((row as TableRow).id);
-    }
     this.ngAfterViewInit();
   }
 
-  private getId(): number {
-    let rand;
-    while (true) {
-      rand = this.minId + Math.random() * (this.minId + 1 - this.maxId);
-      if (!this.idSet.has(rand)) {
-        this.idSet.add(rand);
-        break;
-      }
-    }
-    return rand;
-  }
 }

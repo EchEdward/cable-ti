@@ -1,14 +1,15 @@
 import { Directive, Input, ViewContainerRef } from '@angular/core';
 
 @Directive({
-    selector: '[appRef]'
+    selector: '[appTableCellRef]'
 })
-export class RefDirective {
+export class TableCellRefDirective {
 
-    @Input('appRef') component!: any;
-    @Input() ID!: number;
+    @Input('appTableCellRef') component!: any;
     @Input() row!: number;
     @Input() column!: number;
+
+    refType = 'table';
 
     constructor(public containerRef: ViewContainerRef) {
     }

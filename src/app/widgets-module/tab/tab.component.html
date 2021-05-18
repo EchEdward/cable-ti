@@ -17,7 +17,7 @@
     class="tabcontent"
     [ngClass]="{visible: list===tab.id, invisible: list!==tab.id}"
 >
-    <ng-template [appRef]="tab.component" [ID]="tab.id"></ng-template>
+    <ng-template [appTabRef]="tab.component" [ID]="tab.id"></ng-template>
 </div>
 
 

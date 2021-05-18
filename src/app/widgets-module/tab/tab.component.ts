@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ComboBoxComponent } from '../combo-box/combo-box.component';
-import { RefDirective } from '../directives/ref.directive';
+import { TabRefDirective } from '../directives/tab-ref.directive';
 import { TableComponent } from '../table/table.component';
 
 
@@ -27,7 +27,7 @@ export class TabComponent implements OnInit, AfterViewInit {
   list = this.tabs.length;
 
 
-  @ViewChildren(RefDirective) refDirList!: QueryList<RefDirective>;
+  @ViewChildren(TabRefDirective) refDirList!: QueryList<TabRefDirective>;
 
   constructor(private resolver: ComponentFactoryResolver) { }
 

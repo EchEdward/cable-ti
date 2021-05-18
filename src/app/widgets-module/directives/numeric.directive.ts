@@ -1,61 +1,73 @@
-import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input, ViewContainerRef } from '@angular/core';
 
 @Directive({
   selector: '[appNumeric]'
 })
 export class NumericDirective {
-  // tslint:disable-next-line: no-input-rename
-  @Input('decimals') decimals = 0;
-  // tslint:disable-next-line: no-input-rename
-  @Input('negative') negative = 0;
-  // tslint:disable-next-line: no-input-rename
-  @Input('separator') separator = '.';
+  @Input() switch = false;
+  @Input() decimals = 0;
+  @Input() negative = false;
 
-  private checkAllowNegative(value: string): any {
-    if (this.decimals <= 0) {
-      return String(value).match(new RegExp(/^-?\d+$/));
-    } else {
-      const regExpString =
-        '^-?\\s*((\\d+(\\' + this.separator + '\\d{0,' +
-        this.decimals +
-        '})?)|((\\d*(\\' + this.separator + '\\d{1,' +
-        this.decimals +
-        '}))))\\s*$';
-      return String(value).match(new RegExp(regExpString));
-    }
-  }
 
-  private check(value: string): any {
-    if (this.decimals <= 0) {
-      return String(value).match(new RegExp(/^\d+$/));
-    } else {
-      const regExpString =
-        '^\\s*((\\d+(\\' + this.separator + '\\d{0,' +
-        this.decimals +
-        '})?)|((\\d*(\\' + this.separator + '\\d{1,' +
-        this.decimals +
-        '}))))\\s*$';
-      return String(value).match(new RegExp(regExpString));
-    }
-  }
+  private chars = new Map([
+    ['1',  '1'],
+    ['2',  '2'],
+    ['3',  '3'],
+    ['4',  '4'],
+    ['5',  '5'],
+    ['6',  '6'],
+    ['7',  '7'],
+    ['8',  '8'],
+    ['9',  '9'],
+    ['0',  '0'],
+    ['.',  '.'],
+    [',',  '.'],
+    ['-',  '-'],
+  ]);
 
-  private run(oldValue: string): void {
-    setTimeout(() => {
-      const currentValue: string = this.el.nativeElement.value;
-      const allowNegative: boolean = this.negative > 0 ? true : false;
-
-      if (allowNegative) {
-        if (
-          !['', '-'].includes(currentValue) &&
-          !this.checkAllowNegative(currentValue)
-        ) {
-          this.el.nativeElement.value = oldValue;
-        }
-      } else {
-        if (currentValue !== '' && !this.check(currentValue)) {
-          this.el.nativeElement.value = oldValue;
+  private check(value: string): string {
+    const arr: string[] = [];
+    let minCount = 0;
+    let dotCount = 0;
+    let demCount = 0;
+    // tslint:disable-next-line: prefer-for-of
+    for (let i = 0; i < value.length; i++) {
+      if (this.chars.has(value[i])) {
+        const ch = this.chars.get(value[i]) as string;
+        if (ch === '-') {
+          if ((minCount > 0 && this.negative) || !this.negative || (i > 0 && minCount === 0 && this.negative)) {
+            continue;
+          } else {
+            minCount += 1;
+            arr.push(ch);
+          }
+        } else if (ch === '.') {
+          if ((dotCount > 0 && this.decimals > 0) || this.decimals === 0) {
+            continue;
+          } else {
+            dotCount += 1;
+            arr.push(ch);
+          }
+        } else if (dotCount > 0) {
+          if (demCount >= this.decimals) {
+            continue;
+          } else {
+            demCount += 1;
+            arr.push(ch);
+          }
+        } else {
+          arr.push(ch);
         }
       }
+    }
+    return arr.join('');
+
+  }
+
+  private run(): void {
+    setTimeout(() => {
+      console.log(this.el.nativeElement);
+      this.el.nativeElement.value = this.check(this.el.nativeElement.value);
     });
   }
 
@@ -63,11 +75,15 @@ export class NumericDirective {
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    this.run(this.el.nativeElement.value);
+    if (this.switch) {
+      this.run();
+    }
   }
 
   @HostListener('paste', ['$event'])
   onPaste(event: ClipboardEvent): void {
-    this.run(this.el.nativeElement.value);
+    if (this.switch) {
+      this.run();
+    }
   }
 }

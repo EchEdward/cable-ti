@@ -1,1 +1,11 @@
-<input (focusout)="focusOut()" type="text" >
+<input 
+    (focus)="focusEvent()"
+    (input)="changeEvent(myInput.value)"
+    type="text"
+    [value]="currentText"
+    #myInput
+    appNumeric
+    [switch]="onlyNymeric"
+    [decimals]="decimals"
+    [negative]="negative"
+>
