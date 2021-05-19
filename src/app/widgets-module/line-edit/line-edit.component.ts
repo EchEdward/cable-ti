@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { WidgetEvent } from '../interfaces/event-interface';
 import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
 
@@ -21,16 +21,26 @@ export class LineEditComponent implements OnInit {
   @Input() negative = false;
 
   currentText = '';
+  directiveEventStream$: Subject<string> = new Subject();
 
   constructor() {
+    // tslint:disable-next-line: deprecation
+    this.directiveEventStream$.subscribe((txt: string) => {
+      this._changeEvent(txt);
+    });
   }
 
 
   ngOnInit(): void {
   }
 
-
   changeEvent(txt: string): void {
+    if (!this.onlyNymeric) {
+      this.directiveEventStream$.next(txt);
+    }
+  }
+
+  private _changeEvent(txt: string): void {
     if (this.eventStream$) {
       if (this.tableCellRef) {
         this.eventStream$.next({

@@ -1,4 +1,5 @@
 import { Directive, ElementRef, HostListener, Input, ViewContainerRef } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Directive({
   selector: '[appNumeric]'
@@ -7,6 +8,7 @@ export class NumericDirective {
   @Input() switch = false;
   @Input() decimals = 0;
   @Input() negative = false;
+  @Input() directiveEventStream$!: Subject<string>;
 
 
   private chars = new Map([
@@ -66,8 +68,10 @@ export class NumericDirective {
 
   private run(): void {
     setTimeout(() => {
-      console.log(this.el.nativeElement);
       this.el.nativeElement.value = this.check(this.el.nativeElement.value);
+      if (this.directiveEventStream$) {
+        this.directiveEventStream$.next(this.el.nativeElement.value);
+      }
     });
   }
 

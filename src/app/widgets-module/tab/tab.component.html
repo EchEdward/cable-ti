@@ -1,10 +1,10 @@
 <!-- Tab links -->
 <div class="tab">
     <button  
-        *ngFor="let tab of tabs" 
+        *ngFor="let tab of tabs; let idxTab = index" 
         class="tablinks" 
-        (click)="setList(tab.id)"
-        [ngClass]="{active: list===tab.id}"
+        (click)="setCurrentTab(idxTab)"
+        [ngClass]="{active: currentTab===idxTab}"
     >
         {{tab.title}}
     </button>
@@ -13,11 +13,11 @@
 <!-- Tab content -->
 
 <div 
-    *ngFor="let tab of tabs"  
+    *ngFor="let tab of tabs; let idxTab = index"  
     class="tabcontent"
-    [ngClass]="{visible: list===tab.id, invisible: list!==tab.id}"
+    [ngClass]="{visible: currentTab===idxTab, invisible: currentTab!==idxTab}"
 >
-    <ng-template [appTabRef]="tab.component" [ID]="tab.id"></ng-template>
+    <ng-template [appTabRef]="tab.component" [idxTab]="idxTab"></ng-template>
 </div>
 
 

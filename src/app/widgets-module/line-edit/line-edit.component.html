@@ -1,6 +1,4 @@
 <input 
-    (focus)="focusEvent()"
-    (input)="changeEvent(myInput.value)"
     type="text"
     [value]="currentText"
     #myInput
@@ -8,4 +6,7 @@
     [switch]="onlyNymeric"
     [decimals]="decimals"
     [negative]="negative"
+    [directiveEventStream$]="directiveEventStream$"
+    (focus)="focusEvent()"
+    (input)="changeEvent(myInput.value)"
 >

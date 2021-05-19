@@ -67,6 +67,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   addRow(pos = -1): void {
+    pos = this.rows.length < pos ? this.rows.length : pos;
     if (pos >= 0) {
       this.rows.splice(pos, 0, {columns: [
         {component: LabelComponent, status: 'create'},
@@ -84,13 +85,20 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   removeRow(pos = -1): void {
-    let row;
+    if (this.rows.length === 0) {
+      return;
+    }
+    pos = this.rows.length < pos ? this.rows.length : pos;
     if (pos >= 0) {
-      row = this.rows.splice(pos, 1);
+      this.rows.splice(pos, 1);
     } else {
-      row = this.rows.pop();
+      this.rows.pop();
     }
     this.ngAfterViewInit();
+  }
+
+  getEventStream(): Subject<WidgetEvent> {
+    return this.eventStream$;
   }
 
 }

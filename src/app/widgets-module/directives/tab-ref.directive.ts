@@ -6,7 +6,7 @@ import { Directive, Input, ViewContainerRef } from '@angular/core';
 export class TabRefDirective {
 
     @Input('appTabRef') component!: any;
-    @Input() ID!: number;
+    @Input() idxTab!: number;
     refType = 'tab';
 
     constructor(public containerRef: ViewContainerRef) {

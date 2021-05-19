@@ -1,6 +1,13 @@
 <app-combo-box></app-combo-box>
 <app-line-edit></app-line-edit>
-<input appNumeric [decimals]="2" [negative]="true"/>
-<app-tab></app-tab>
+<app-tab #cmp></app-tab>
+
+
+<button (click)="addTab()">Добавить вкладку</button>
+<button (click)="removeTab()">Удалить вкладку</button>
+<button (click)="setCurrentTab()">Установить вкладку</button>
+<button (click)="setTabTitle('axaxaxaxa')">Установить название вкладки</button>
+<button (click)="setTabComponent()">Заменить компонент</button>
+
 
 <router-outlet></router-outlet>
