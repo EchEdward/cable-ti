@@ -11,7 +11,7 @@ import { TableCellRefDirective } from './directives/table-cell-ref.directive';
 import { NumericDirective} from './directives/numeric.directive';
 import { LabelComponent } from './label/label.component';
 
-
+import { ToRedDirective} from './directives/tored.directive';
 
 
 @NgModule({
@@ -24,7 +24,8 @@ import { LabelComponent } from './label/label.component';
       TabRefDirective,
       TableCellRefDirective,
       LabelComponent,
-      NumericDirective
+      NumericDirective,
+      ToRedDirective
   ],
   imports: [
     CommonModule,

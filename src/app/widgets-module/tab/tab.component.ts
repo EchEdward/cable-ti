@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { TabRefDirective } from '../directives/tab-ref.directive';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 
 
 interface Tab {
@@ -31,6 +31,10 @@ export class TabComponent implements OnInit, AfterViewInit {
   @ViewChildren(TabRefDirective) refDirList!: QueryList<TabRefDirective>;
 
   constructor(private resolver: ComponentFactoryResolver) {
+  }
+
+  getEventStream(): Observable<TabEvent> {
+    return this.eventStream$.asObservable();
   }
 
 

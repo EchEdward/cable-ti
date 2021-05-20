@@ -1,11 +1,13 @@
-import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Subject } from 'rxjs';
-import { ComboBoxComponent } from '../combo-box/combo-box.component';
-import { LabelComponent } from '../label/label.component';
-import { LineEditComponent } from '../line-edit/line-edit.component';
+import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, Renderer2, ViewChildren } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
 import { WidgetEvent } from '../interfaces/event-interface';
 import { NumericDirective } from '../directives/numeric.directive';
+import { ToRedDirective } from '../directives/tored.directive';
+
+import { ComboBoxComponent } from '../combo-box/combo-box.component';
+import { LabelComponent } from '../label/label.component';
+import { LineEditComponent } from '../line-edit/line-edit.component';
 
 
 interface TableItem {
@@ -31,9 +33,12 @@ export class TableComponent implements OnInit, AfterViewInit {
   header: string[] = ['1', '2', '3'];
   rows: TableRow[] = [];
 
+  rowCount = 0;
+  columnCount = 0;
+
   @ViewChildren(TableCellRefDirective) refDirList!: QueryList<TableCellRefDirective>;
 
-  constructor(private resolver: ComponentFactoryResolver) {
+  constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2) {
     // tslint:disable-next-line: deprecation
     this.eventStream$.subscribe(value => {
       console.log(value);
@@ -57,7 +62,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.rows[ref.row].columns[ref.column].example = componentRef;
           componentRef.instance.eventStream$ = this.eventStream$;
           componentRef.instance.tableCellRef = ref;
-          // const num: NumericDirective = new NumericDirective(componentRef.location);
+          // const num: ToRedDirective = new ToRedDirective(componentRef, this.renderer);
 
         }
         // задание свойств в Input
@@ -66,21 +71,28 @@ export class TableComponent implements OnInit, AfterViewInit {
     }, 0);
   }
 
+  setColumnCount(columns: number, defaultComponent: any, defaultDirective: any): void {
+
+  }
+
+  setRowCount(rows: number, defaultComponent: any, defaultDirective: any): void {
+
+  }
+
   addRow(pos = -1): void {
-    pos = this.rows.length < pos ? this.rows.length : pos;
-    if (pos >= 0) {
-      this.rows.splice(pos, 0, {columns: [
-        {component: LabelComponent, status: 'create'},
-        {component: ComboBoxComponent, status: 'create'},
-        {component: LineEditComponent, status: 'create'}
-      ]});
-    } else {
-      this.rows.push({columns: [
-        {component: LabelComponent, status: 'create'},
-        {component: ComboBoxComponent, status: 'create'},
-        {component: LineEditComponent, status: 'create'}
-      ]});
-    }
+    pos = (this.rows.length < pos || pos === -1) ? this.rows.length : pos;
+    this.rows.splice(pos, 0, {columns: [
+      {component: LabelComponent, status: 'create'},
+      {component: ComboBoxComponent, status: 'create'},
+      {component: LineEditComponent, status: 'create'}
+    ]} );
+    /*
+    {columns: [
+      {component: LabelComponent, status: 'create'},
+      {component: ComboBoxComponent, status: 'create'},
+      {component: LineEditComponent, status: 'create'}
+    ]}
+     */
     this.ngAfterViewInit();
   }
 
@@ -97,8 +109,8 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.ngAfterViewInit();
   }
 
-  getEventStream(): Subject<WidgetEvent> {
-    return this.eventStream$;
+  getEventStream(): Observable<WidgetEvent> {
+    return this.eventStream$.asObservable();
   }
 
 }
