@@ -8,7 +8,7 @@
     <tbody>
         <tr *ngFor="let row of rows; let idxRow = index" >
             <td>{{idxRow}}</td>
-            <td *ngFor="let column of row.columns; let idxCol = index">
+            <td *ngFor="let column of row; let idxCol = index">
                 <ng-template [appTableCellRef]="column.component" [row]="idxRow" [column]="idxCol"></ng-template>
             </td>
         </tr>
