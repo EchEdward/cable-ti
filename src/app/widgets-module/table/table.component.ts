@@ -16,6 +16,12 @@ interface TableItem {
   status: 'create' | 'none';
   example?: any;
   directives: any[];
+  dExamples?: any[];
+}
+
+interface CellInd {
+  i: number;
+  j: number;
 }
 
 @Component({
@@ -35,6 +41,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   private _rowCount = 0;
   // tslint:disable-next-line: variable-name
   private _columnCount = 0;
+  // tslint:disable-next-line: variable-name
+  private _currentCell: CellInd = {i: -1, j: -1};
 
   @ViewChildren(TableCellRefDirective) refDirList!: QueryList<TableCellRefDirective>;
 
@@ -43,6 +51,24 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.eventStream$.subscribe(value => {
       console.log(value);
     });
+
+    // .bind(this) привязываем к методу его this this.eventHandler.bind(this)
+    // tslint:disable-next-line: deprecation
+    this.eventStream$.subscribe(value => this.eventHandler(value));
+  }
+
+  private eventHandler(event: WidgetEvent): void {
+    if (event.event === 'focus') {
+      this.setCurrentCellPos(event);
+    }
+  }
+
+  private setCurrentCellPos(event: WidgetEvent): void {
+    this._currentCell = {i: event.ref.row, j: event.ref.column};
+  }
+
+  getCurrentCellPos(): CellInd {
+    return {...this._currentCell};
   }
 
   getEventStream(): Observable<WidgetEvent> {
@@ -66,6 +92,13 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.rows[ref.row][ref.column].example = componentRef;
           componentRef.instance.eventStream$ = this.eventStream$;
           componentRef.instance.tableCellRef = ref;
+          if (this.rows[ref.row][ref.column].directives && this.rows[ref.row][ref.column].directives.length > 0) {
+            const dExamples: any[] = [];
+            for (const direct of this.rows[ref.row][ref.column].directives) {
+              dExamples.push(new direct(componentRef, this.renderer));
+            }
+            this.rows[ref.row][ref.column].dExamples = dExamples;
+          }
           // const num: ToRedDirective = new ToRedDirective(componentRef, this.renderer);
 
         }
@@ -123,16 +156,28 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addRow(pos = -1): void {
+  addRow(component: any | any[], directives: any[] | Array<any[]>, pos = -1, ): void {
     pos = (this.rows.length < pos || pos === -1) ? this.rows.length : pos;
-    this.rows.splice(pos, 0, );
-    /*
-    {columns: [
-      {component: LabelComponent, status: 'create'},
-      {component: ComboBoxComponent, status: 'create'},
-      {component: LineEditComponent, status: 'create'}
-    ]}
-     */
+    const row: TableItem[] = [];
+    if (component.constructor === Array) {
+      for (let j = 0; j < this._columnCount; j++) {
+        row.push({
+          component: component[j],
+          status: 'create',
+          directives: directives[j]
+        });
+      }
+    } else {
+      for (let j = 0; j < this._columnCount; j++) {
+        row.push({
+          component,
+          status: 'create',
+          directives
+        });
+      }
+    }
+    this._rowCount += 1;
+    this.rows.splice(pos, 0, row);
     this.ngAfterViewInit();
   }
 
@@ -141,12 +186,99 @@ export class TableComponent implements OnInit, AfterViewInit {
       return;
     }
     pos = this.rows.length < pos ? this.rows.length : pos;
-    if (pos >= 0) {
-      this.rows.splice(pos, 1);
-    } else {
-      this.rows.pop();
-    }
+    this.rows.splice(pos, 1);
+    this._rowCount -= 1;
     this.ngAfterViewInit();
+  }
+
+  addColumn(component: any | any[], directives: any[] | Array<any[]>, pos = -1, ): void {
+    pos = (this._columnCount < pos || pos === -1) ? this._columnCount : pos;
+    if (component.constructor === Array) {
+      for (let i = 0; i < this._rowCount; i++) {
+        this.rows[i].splice(pos, 0, {
+          component: component[i],
+          status: 'create',
+          directives: directives[i]
+        });
+      }
+    } else {
+      for (let i = 0; i < this._rowCount; i++) {
+        this.rows[i].splice(pos, 0, {
+          component,
+          status: 'create',
+          directives
+        });
+      }
+    }
+    this.header.splice(pos, 0, (pos + 1).toString());
+    this._columnCount += 1;
+    this.ngAfterViewInit();
+  }
+
+  removeColumn(pos = -1): void {
+    if (this._columnCount === 0) {
+      return;
+    }
+    pos = this._columnCount < pos ? this._columnCount : pos;
+    for (let i = 0; i < this._rowCount; i++) {
+      this.rows[i].splice(pos, 1);
+    }
+    this.header.splice(pos, 1);
+    this._columnCount -= 1;
+    this.ngAfterViewInit();
+  }
+
+  setHeader(lst: string[] | string, pos = -1): void {
+    if (lst.constructor === Array) {
+      for (let j = 0; j < this._columnCount; j++) {
+        this.header[j] = lst[j];
+      }
+    } else {
+      pos = (this._columnCount < pos || pos === -1) ? this._columnCount : pos;
+      this.header[pos] = lst as string;
+    }
+  }
+
+  getHeader(): string[] {
+    return [...this.header];
+  }
+
+  public get columnCount(): number {
+    return this._columnCount;
+  }
+
+  public get rowCount(): number {
+    return this._rowCount;
+  }
+
+  cell(row: number, column: number): any {
+    if (row < this._rowCount && row > -1 && row < this._columnCount && column > -1) {
+      return this.rows[row][column].example;
+    }
+  }
+
+  setCell(row: number, column: number, component: any, directives: any[]): void {
+    if (row < this._rowCount && row > -1 && row < this._columnCount && column > -1) {
+      this.rows[row][column] = {
+        component,
+        status: 'create',
+        directives
+      };
+    }
+  }
+
+  addDirective(row: number, column: number, directives: any[] | any): void {
+    if (row < this._rowCount && row > -1 && row < this._columnCount && column > -1) {
+      if (directives.constructor === Array) {
+        for (const direct of  directives) {
+          this.rows[row][column].directives.push(direct);
+          this.rows[row][column].dExamples?.push(new direct(this.rows[row][column].example, this.renderer));
+        }
+      } else {
+        this.rows[row][column].directives.push(directives);
+        this.rows[row][column].dExamples?.push(new directives(this.rows[row][column].example, this.renderer));
+      }
+    }
   }
 
 

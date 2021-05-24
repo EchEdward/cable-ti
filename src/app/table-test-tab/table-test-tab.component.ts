@@ -4,6 +4,8 @@ import { ComboBoxComponent } from '../widgets-module/combo-box/combo-box.compone
 import { LabelComponent } from '../widgets-module/label/label.component';
 import { LineEditComponent } from '../widgets-module/line-edit/line-edit.component';
 
+import { ToRedDirective } from '../widgets-module/directives/tored.directive';
+
 
 @Component({
   selector: 'app-table-test-tab',
@@ -15,7 +17,8 @@ export class TableTestTabComponent {
 
   addRow(): void {
     if (this.childComponent) {
-      this.childComponent.addRow();
+      this.childComponent.addRow([LineEditComponent, LineEditComponent, LineEditComponent, LineEditComponent],
+         [[ToRedDirective], [ToRedDirective], [ToRedDirective], [ToRedDirective]]);
     }
   }
 
@@ -23,6 +26,34 @@ export class TableTestTabComponent {
     if (this.childComponent) {
       this.childComponent.removeRow();
     }
+  }
+
+  addColumn(): void {
+    if (this.childComponent) {
+      this.childComponent.addColumn(LineEditComponent, [ToRedDirective]);
+    }
+  }
+
+  removeColumn(): void {
+    if (this.childComponent) {
+      this.childComponent.removeColumn();
+    }
+  }
+
+  setColumnCount(): void {
+    this.childComponent.setColumnCount(4, LineEditComponent, []);
+  }
+
+  setRowCount(): void {
+    this.childComponent.setRowCount(4, LineEditComponent, []);
+  }
+
+  setHeader(): void {
+    this.childComponent.setHeader(['5', '4', '3', '2']);
+  }
+
+  getCurrentCellPos(): void {
+    console.log(this.childComponent.getCurrentCellPos());
   }
 
 }
