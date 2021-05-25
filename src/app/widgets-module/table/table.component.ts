@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, Renderer2, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, Renderer2, ViewChildren, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
 import { WidgetEvent } from '../interfaces/event-interface';
@@ -24,6 +24,17 @@ interface CellInd {
   j: number;
 }
 
+interface TableStyle {
+  table: { [atrr: string]: string };
+  thead: { [atrr: string]: string };
+  tbody: { [atrr: string]: string };
+  theadcell: { [atrr: string]: string };
+  theadfirstcell: { [atrr: string]: string };
+  tbodycell: { [atrr: string]: string };
+  tbodyfirstcell: { [atrr: string]: string };
+  tbodyrow: { [atrr: string]: string };
+}
+
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
@@ -43,7 +54,20 @@ export class TableComponent implements OnInit, AfterViewInit {
   private _columnCount = 0;
   // tslint:disable-next-line: variable-name
   private _currentCell: CellInd = {i: -1, j: -1};
+  // tslint:disable-next-line: variable-name
+  _style: TableStyle = {
+    table: {},
+    thead: {},
+    tbody: {},
+    theadcell: {},
+    theadfirstcell: {},
+    tbodycell: {},
+    tbodyfirstcell: {},
+    tbodyrow: {},
+  };
 
+  @ViewChildren('tbh') headElems!: QueryList<HTMLElement>;
+  @ViewChildren('tbc') cellElems!: QueryList<HTMLElement>;
   @ViewChildren(TableCellRefDirective) refDirList!: QueryList<TableCellRefDirective>;
 
   constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2) {
@@ -55,6 +79,16 @@ export class TableComponent implements OnInit, AfterViewInit {
     // .bind(this) привязываем к методу его this this.eventHandler.bind(this)
     // tslint:disable-next-line: deprecation
     this.eventStream$.subscribe(value => this.eventHandler(value));
+    // console.log(this.childComponent);
+  }
+
+  setStyle(el: 'table' | 'thead' | 'tbody' | 'theadcell' | 'theadfirstcell' | 'tbodycell' | 'tbodyfirstcell' | 'tbodyrow',
+           style: { [atrr: string]: string }): void {
+    this._style[el] = {...this._style[el], ...style};
+  }
+
+  clearStyle(el: 'table' | 'thead' | 'tbody' | 'theadcell' | 'theadfirstcell' | 'tbodycell' | 'tbodyfirstcell' | 'tbodyrow'): void {
+    this._style[el] = {};
   }
 
   private eventHandler(event: WidgetEvent): void {
@@ -82,7 +116,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     // setTimeout use for not throw error
     setTimeout(() => {
       for (const ref of this.refDirList) {
-        if (this.rows[ref.row][ref.column].status === 'create') {
+        if (this.rows[ref.row][ref.column].status === 'create' && this.rows[ref.row][ref.column].component) {
           ref.containerRef.clear();
           // динмаическое определение типа из переменной
           const componentRef = ref.containerRef.createComponent<typeof ref.component>(

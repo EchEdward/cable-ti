@@ -56,4 +56,13 @@ export class TableTestTabComponent {
     console.log(this.childComponent.getCurrentCellPos());
   }
 
+  setLeft(): void {
+    this.childComponent.setStyle('theadcell', {textAlign: 'left'});
+    this.childComponent.setStyle('theadfirstcell', {background: 'red'});
+  }
+
+  clearStyle(): void {
+    this.childComponent.clearStyle('theadcell');
+  }
+
 }
