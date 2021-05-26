@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, Renderer2, ViewChildren, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, Renderer2, ViewChildren } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
 import { WidgetEvent } from '../interfaces/event-interface';
@@ -35,6 +35,11 @@ interface TableStyle {
   tbodyrow: { [atrr: string]: string };
 }
 
+interface ColumnWidth {
+  tp: 'px' | '%';
+  width: number[];
+}
+
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
@@ -66,8 +71,10 @@ export class TableComponent implements OnInit, AfterViewInit {
     tbodyrow: {},
   };
 
-  @ViewChildren('tbh') headElems!: QueryList<HTMLElement>;
-  @ViewChildren('tbc') cellElems!: QueryList<HTMLElement>;
+  // tslint:disable-next-line: variable-name
+  _columnWidth: ColumnWidth = {tp: '%', width: []};
+
+
   @ViewChildren(TableCellRefDirective) refDirList!: QueryList<TableCellRefDirective>;
 
   constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2) {
@@ -80,6 +87,75 @@ export class TableComponent implements OnInit, AfterViewInit {
     // tslint:disable-next-line: deprecation
     this.eventStream$.subscribe(value => this.eventHandler(value));
     // console.log(this.childComponent);
+  }
+
+  private updateColumnWidth(before: number, after: number, pos = -1): void {
+    if (before === 0 && after > 0) {
+      this._columnWidth.tp = '%';
+      this._columnWidth.width = new Array(after).fill(Math.round(100 / after));
+
+    } else if (before > 0 && after === 0) {
+      this._columnWidth.tp = '%';
+      this._columnWidth.width = [];
+
+    } else if (before > 0 && after > 0 && (after > before || after < before)) {
+      if (this._columnWidth.tp === '%') {
+        if (after < before) {
+          if (pos !== -1 && before - after === 1) {
+            this._columnWidth.width = this._columnWidth.width.map((item) => Math.round(item * before / after)).splice(pos, 1);
+          } else {
+            this._columnWidth.width = this._columnWidth.width.map((item) => Math.round(item * before / after)).slice(0, after);
+          }
+        } else {
+          const width = Math.round((this._columnWidth.width.reduce((a, b) => a + b, 0) / before) * before / after);
+          const arr = this._columnWidth.width.map((item) => Math.round(item * before / after));
+          if (pos !== -1 && after - before === 1) {
+            arr.splice(pos, 0, width);
+          } else {
+            arr.push(...new Array(after - before).fill(width));
+          }
+          this._columnWidth.width = arr;
+        }
+      } else if (this._columnWidth.tp === 'px') {
+        if (after < before) {
+          if (pos !== -1 && before - after === 1) {
+            this._columnWidth.width.splice(pos, 1);
+          } else {
+            this._columnWidth.width.splice(after, before - after);
+          }
+        } else {
+          const width = Math.round(this._columnWidth.width.reduce((a, b) => a + b, 0) / before);
+          if (pos !== -1 && after - before === 1) {
+            this._columnWidth.width.splice(pos, 0, width);
+          } else {
+            this._columnWidth.width.push(...new Array(after - before).fill(width));
+          }
+        }
+      }
+    }
+  }
+
+  setColumnWidth(tp: 'px' | '%', width: number | number[], pos = -1): void {
+    if (width.constructor === Array) {
+      if (tp === 'px') {
+
+      } else if (tp === '%') {
+        
+      }
+    } else {
+      if (tp === 'px' && this._columnWidth.tp === 'px' && pos > -1 && pos < this._columnWidth.width.length) {
+        this._columnWidth.width[pos] = width as number;
+      } else if (tp === '%' && this._columnWidth.tp === '%' &&
+                 pos > -1 && pos < this._columnWidth.width.length &&
+                 width <= 100) {
+        this._columnWidth.width = this._columnWidth.width.map((item, i, arr) => {
+          if (i === pos) {
+            return width as number;
+          }
+          return Math.round((item * (100 - (width as number))) / (100 - arr[pos]));
+        });
+      }
+    }
   }
 
   setStyle(el: 'table' | 'thead' | 'tbody' | 'theadcell' | 'theadfirstcell' | 'tbodycell' | 'tbodyfirstcell' | 'tbodyrow',
@@ -156,6 +232,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       for (let j = this._columnCount; j < columns; j++) {
         this.header.push((j + 1).toString());
       }
+      this.updateColumnWidth(this._columnCount, columns);
       this._columnCount = columns;
       this.ngAfterViewInit();
     } else if (this._columnCount > columns) {
@@ -163,6 +240,7 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.rows[i].splice(columns, this._columnCount - columns);
       }
       this.header.splice(columns, this._columnCount - columns);
+      this.updateColumnWidth(this._columnCount, columns);
       this._columnCount = columns;
       this.ngAfterViewInit();
     }
@@ -245,6 +323,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       }
     }
     this.header.splice(pos, 0, (pos + 1).toString());
+    this.updateColumnWidth(this._columnCount, this._columnCount + 1, pos);
     this._columnCount += 1;
     this.ngAfterViewInit();
   }
@@ -258,6 +337,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.rows[i].splice(pos, 1);
     }
     this.header.splice(pos, 1);
+    this.updateColumnWidth(this._columnCount, this._columnCount - 1, pos);
     this._columnCount -= 1;
     this.ngAfterViewInit();
   }

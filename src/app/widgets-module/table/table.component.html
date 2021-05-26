@@ -1,14 +1,16 @@
 <div id="scroll">
     <table class="c-table" [ngStyle]="_style.table">
+        <colgroup>
+            <col span="1">
+            <col *ngFor="let wd of _columnWidth.width" span="1" [attr.style]="'width: '+wd.toString()+_columnWidth.tp+';'">
+        </colgroup>
         <thead class="c-thead" [ngStyle]="_style.thead">
             <tr>
                 <th>
                     <div class="c-theadfirstcell" [ngStyle]="_style.theadfirstcell">№</div>
                 </th>
                 <th 
-                    [attr.id]="'tbh-' + headInd" 
-                    #tbh
-                    *ngFor="let colHead of header; let headInd = index"
+                    *ngFor="let colHead of header"
                 >
                     <div class="c-theadcell" [ngStyle]="_style.theadcell" >{{colHead}}</div>
                 </th>
@@ -20,8 +22,6 @@
                 <td 
                     class="c-tbodycell" 
                     [ngStyle]="_style.tbodycell"
-                    [attr.id]="'tbc-' + idxCol" 
-                    #tbc
                     *ngFor="let column of row; let idxCol = index">
                     <ng-template [appTableCellRef]="column.component" [row]="idxRow" [column]="idxCol"></ng-template>
                 </td>
