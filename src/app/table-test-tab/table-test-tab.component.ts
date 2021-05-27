@@ -57,12 +57,15 @@ export class TableTestTabComponent {
   }
 
   setLeft(): void {
-    this.childComponent.setStyle('theadcell', {textAlign: 'left'});
-    this.childComponent.setStyle('theadfirstcell', {background: 'red'});
+    // this.childComponent.setStyle('theadcell', {textAlign: 'left'});
+    // this.childComponent.setStyle('theadfirstcell', {background: 'red'});
+    this.childComponent.setColumnWidth('px', [200, 200, 200, 200]);
   }
 
   clearStyle(): void {
-    this.childComponent.clearStyle('theadcell');
+    // this.childComponent.clearStyle('theadcell');
+    this.childComponent.setColumnWidth('%', [50, 30, 70]);
+    // this.childComponent.setColumnWidth('px', 400, 1);
   }
 
 }

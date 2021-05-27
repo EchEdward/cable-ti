@@ -92,10 +92,12 @@ export class TableComponent implements OnInit, AfterViewInit {
   private updateColumnWidth(before: number, after: number, pos = -1): void {
     if (before === 0 && after > 0) {
       this._columnWidth.tp = '%';
+      this.setStyle('table', {width: '100%'});
       this._columnWidth.width = new Array(after).fill(Math.round(100 / after));
 
     } else if (before > 0 && after === 0) {
       this._columnWidth.tp = '%';
+      this.setStyle('table', {width: '100%'});
       this._columnWidth.width = [];
 
     } else if (before > 0 && after > 0 && (after > before || after < before)) {
@@ -131,6 +133,7 @@ export class TableComponent implements OnInit, AfterViewInit {
             this._columnWidth.width.push(...new Array(after - before).fill(width));
           }
         }
+        this.setStyle('table', {width: this._columnWidth.width.reduce((a, b) => a + b, 0).toString() + 'px'});
       }
     }
   }
@@ -138,13 +141,48 @@ export class TableComponent implements OnInit, AfterViewInit {
   setColumnWidth(tp: 'px' | '%', width: number | number[], pos = -1): void {
     if (width.constructor === Array) {
       if (tp === 'px') {
-
+        let arr: number[] = [];
+        if (width.length >= this._columnWidth.width.length) {
+          arr = width.slice(0, this._columnWidth.width.length);
+        } else {
+          if (this._columnWidth.tp === 'px') {
+            arr = [...width, ...this._columnWidth.width.slice(width.length, this._columnWidth.width.length)];
+          } else {
+            arr = [...width,
+              ...new Array(this._columnWidth.width.length - width.length).fill(
+                Math.round(width.reduce((a, b) => a + b, 0) / width.length))
+            ];
+          }
+        }
+        this._columnWidth.tp = 'px';
+        this._columnWidth.width = arr;
+        this.setStyle('table', {width: arr.reduce((a, b) => a + b, 0).toString() + 'px'});
       } else if (tp === '%') {
-        
+        if (width.length >= this._columnWidth.width.length) {
+          const arr = width.slice(0, this._columnWidth.width.length);
+          const sm = arr.reduce((a, b) => a + b, 0);
+          this._columnWidth.width = arr.map((item) => Math.round(item * 100 / sm));
+        } else {
+          if (this._columnWidth.tp === '%') {
+            const arr = [...width, ...this._columnWidth.width.slice(width.length, this._columnWidth.width.length)];
+            const sm = arr.reduce((a, b) => a + b, 0);
+            this._columnWidth.width = arr.map((item) => Math.round(item * 100 / sm));
+          } else {
+            const arr = [...width,
+              ...new Array(this._columnWidth.width.length - width.length).fill(
+                Math.round(width.reduce((a, b) => a + b, 0) / width.length))
+            ];
+            const sm = arr.reduce((a, b) => a + b, 0);
+            this._columnWidth.width = arr.map((item) => Math.round(item * 100 / sm));
+          }
+        }
+        this._columnWidth.tp = '%';
+        this.setStyle('table', {width: '100%'});
       }
     } else {
       if (tp === 'px' && this._columnWidth.tp === 'px' && pos > -1 && pos < this._columnWidth.width.length) {
         this._columnWidth.width[pos] = width as number;
+        this.setStyle('table', {width: this._columnWidth.width.reduce((a, b) => a + b, 0).toString() + 'px'});
       } else if (tp === '%' && this._columnWidth.tp === '%' &&
                  pos > -1 && pos < this._columnWidth.width.length &&
                  width <= 100) {
