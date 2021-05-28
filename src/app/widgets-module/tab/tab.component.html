@@ -1,10 +1,11 @@
 <!-- Tab links -->
-<div class="tab">
+<div class="tab" [ngStyle]="_style.tabbar">
     <button  
         *ngFor="let tab of tabs; let idxTab = index" 
         class="tablinks" 
         (click)="setCurrentTab(idxTab)"
-        [ngClass]="{active: currentTab===idxTab}"
+        [ngClass]="{active: _currentTab===idxTab}"
+        [ngStyle]="(_currentTab===idxTab ? _style.tabbaritemactive : _style.tabbaritem)"
     >
         {{tab.title}}
     </button>
@@ -15,7 +16,8 @@
 <div 
     *ngFor="let tab of tabs; let idxTab = index"  
     class="tabcontent"
-    [ngClass]="{visible: currentTab===idxTab, invisible: currentTab!==idxTab}"
+    [ngClass]="{visible: _currentTab===idxTab, invisible: _currentTab!==idxTab}"
+    [ngStyle]="(_currentTab===idxTab ? _style.tabcontent : {})"
 >
     <ng-template [appTabRef]="tab.component" [idxTab]="idxTab"></ng-template>
 </div>

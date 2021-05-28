@@ -16,9 +16,9 @@ export class AppComponent {
   addTab(): void {
     if (this.childComponent) {
       if (this.title === 1) {
-        this.childComponent.addTab(this.title.toString(), TableTestTabComponent);
+        this.childComponent.addTab(this.title.toString(), TableTestTabComponent, {}, []);
       } else {
-        this.childComponent.addTab(this.title.toString(), TableComponent);
+        this.childComponent.addTab(this.title.toString(), TableComponent, {}, []);
       }
       // this.childComponent.addTab(this.title.toString(), TableComponent);
       this.title += 1;

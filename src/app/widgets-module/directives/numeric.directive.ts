@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, Input, ViewContainerRef } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input} from '@angular/core';
 import { Subject } from 'rxjs';
 
 @Directive({
@@ -79,6 +79,13 @@ export class NumericDirective {
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
+    if (this.switch) {
+      this.run();
+    }
+  }
+
+  @HostListener('change', ['$event'])
+  onChange(event: KeyboardEvent): void {
     if (this.switch) {
       this.run();
     }

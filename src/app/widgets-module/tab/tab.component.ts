@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren, Renderer2 } from '@angular/core';
 import { TabRefDirective } from '../directives/tab-ref.directive';
 import { Subject, Observable } from 'rxjs';
 
@@ -8,6 +8,16 @@ interface Tab {
   status: 'create' | 'none';
   component: any;
   example?: any;
+  instance: { [atrr: string]: any };
+  directives: any[];
+  dExamples?: any[];
+}
+
+interface TabStyle {
+  tabbar: { [atrr: string]: string };
+  tabbaritem: { [atrr: string]: string };
+  tabbaritemactive: { [atrr: string]: string };
+  tabcontent: { [atrr: string]: string };
 }
 
 export interface TabEvent {
@@ -24,17 +34,39 @@ export class TabComponent implements OnInit, AfterViewInit {
 
   tabs: Tab[] = [
   ];
-
-  currentTab = -1;
+  // tslint:disable-next-line: variable-name
+  _currentTab = -1;
   eventStream$: Subject<TabEvent> = new Subject();
+
+  // tslint:disable-next-line: variable-name
+  _style: TabStyle = {
+    tabbar: {},
+    tabbaritem: {},
+    tabbaritemactive: {},
+    tabcontent: {}
+  };
 
   @ViewChildren(TabRefDirective) refDirList!: QueryList<TabRefDirective>;
 
-  constructor(private resolver: ComponentFactoryResolver) {
+  constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2) {
   }
 
   getEventStream(): Observable<TabEvent> {
     return this.eventStream$.asObservable();
+  }
+
+
+  setStyle(el: 'tabbar' | 'tabbaritem' | 'tabbaritemactive' | 'tabcontent',
+           style: { [atrr: string]: string }): void {
+    this._style[el] = {...this._style[el], ...style};
+  }
+
+  clearStyle(el: 'tabbar' | 'tabbaritem' | 'tabbaritemactive' | 'tabcontent'): void {
+    this._style[el] = {};
+  }
+
+  getStyle(el: 'tabbar' | 'tabbaritem' | 'tabbaritemactive' | 'tabcontent'): { [atrr: string]: string } {
+    return {...this._style[el]};
   }
 
 
@@ -52,13 +84,25 @@ export class TabComponent implements OnInit, AfterViewInit {
           );
           this.tabs[ref.idxTab].status = 'none';
           this.tabs[ref.idxTab].example = componentRef;
+
+          for (const inst of Object.keys(this.tabs[ref.idxTab].instance)) {
+            componentRef.instance[inst] = this.tabs[ref.idxTab].instance[inst];
+          }
+
+          if (this.tabs[ref.idxTab].directives && this.tabs[ref.idxTab].directives.length > 0) {
+            const dExamples: any[] = [];
+            for (const direct of this.tabs[ref.idxTab].directives) {
+              dExamples.push(new direct(componentRef, this.renderer));
+            }
+            this.tabs[ref.idxTab].dExamples = dExamples;
+          }
         }
       }
     }, 0);
   }
 
   setCurrentTab(val: number): void {
-    this.currentTab = val;
+    this._currentTab = val;
     this.eventStream$.next({
       event: 'select',
       pos: val
@@ -66,7 +110,7 @@ export class TabComponent implements OnInit, AfterViewInit {
   }
 
   getCurrentTab(): number {
-    return this.currentTab;
+    return this._currentTab;
   }
 
   getTabTitle(pos: number): string {
@@ -105,14 +149,16 @@ export class TabComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addTab(title: string, component: any, pos = -1): void {
+  addTab(title: string, component: any, instance: { [atrr: string]: any }, directives: any[], pos = -1): void {
     pos = (this.tabs.length < pos || pos === -1) ? this.tabs.length : pos;
     this.tabs.splice(pos, 0, {
       title,
       status: 'create',
-      component
+      component,
+      directives,
+      instance
     });
-    this.currentTab = pos;
+    this._currentTab = pos;
     this.ngAfterViewInit();
     this.eventStream$.next({
       event: 'add',
@@ -126,12 +172,26 @@ export class TabComponent implements OnInit, AfterViewInit {
     }
     pos = (this.tabs.length < pos || pos === -1) ? this.tabs.length - 1 : pos;
     this.tabs.splice(pos, 1);
-    this.currentTab = this.tabs.length - 1;
+    this._currentTab = this.tabs.length - 1;
     this.ngAfterViewInit();
     this.eventStream$.next({
       event: 'remove',
       pos
     });
+  }
+
+  addDirective(pos: number, directives: any[] | any): void {
+    if (pos < this.tabs.length && pos > -1) {
+      if (directives.constructor === Array) {
+        for (const direct of  directives) {
+          this.tabs[pos].directives.push(direct);
+          this.tabs[pos].dExamples?.push(new direct(this.tabs[pos].example, this.renderer));
+        }
+      } else {
+        this.tabs[pos].directives.push(directives);
+        this.tabs[pos].dExamples?.push(new directives(this.tabs[pos].example, this.renderer));
+      }
+    }
   }
 
 }

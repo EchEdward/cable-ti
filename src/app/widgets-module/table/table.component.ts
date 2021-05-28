@@ -3,18 +3,12 @@ import { Subject, Observable } from 'rxjs';
 import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
 import { WidgetEvent } from '../interfaces/event-interface';
 
-import { NumericDirective } from '../directives/numeric.directive';
-import { ToRedDirective } from '../directives/tored.directive';
-
-import { ComboBoxComponent } from '../combo-box/combo-box.component';
-import { LabelComponent } from '../label/label.component';
-import { LineEditComponent } from '../line-edit/line-edit.component';
-
 
 interface TableItem {
   component: any;
   status: 'create' | 'none';
   example?: any;
+  instance: { [atrr: string]: any };
   directives: any[];
   dExamples?: any[];
 }
@@ -78,11 +72,6 @@ export class TableComponent implements OnInit, AfterViewInit {
   @ViewChildren(TableCellRefDirective) refDirList!: QueryList<TableCellRefDirective>;
 
   constructor(private resolver: ComponentFactoryResolver, private renderer: Renderer2) {
-    // tslint:disable-next-line: deprecation
-    this.eventStream$.subscribe(value => {
-      console.log(value);
-    });
-
     // .bind(this) привязываем к методу его this this.eventHandler.bind(this)
     // tslint:disable-next-line: deprecation
     this.eventStream$.subscribe(value => this.eventHandler(value));
@@ -205,6 +194,11 @@ export class TableComponent implements OnInit, AfterViewInit {
     this._style[el] = {};
   }
 
+  getStyle(el: 'table' | 'thead' | 'tbody' | 'theadcell' |
+          'theadfirstcell' | 'tbodycell' | 'tbodyfirstcell' | 'tbodyrow'): { [atrr: string]: string } {
+    return {...this._style[el]};
+  }
+
   private eventHandler(event: WidgetEvent): void {
     if (event.event === 'focus') {
       this.setCurrentCellPos(event);
@@ -240,6 +234,9 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.rows[ref.row][ref.column].example = componentRef;
           componentRef.instance.eventStream$ = this.eventStream$;
           componentRef.instance.tableCellRef = ref;
+          for (const inst of Object.keys(this.rows[ref.row][ref.column].instance)) {
+            componentRef.instance[inst] = this.rows[ref.row][ref.column].instance[inst];
+          }
           if (this.rows[ref.row][ref.column].directives && this.rows[ref.row][ref.column].directives.length > 0) {
             const dExamples: any[] = [];
             for (const direct of this.rows[ref.row][ref.column].directives) {
@@ -256,14 +253,15 @@ export class TableComponent implements OnInit, AfterViewInit {
     }, 0);
   }
 
-  setColumnCount(columns: number, defaultComponent: any, defaultDirectives: any[]): void {
+  setColumnCount(columns: number, defaultComponent: any, defaultInstance: { [atrr: string]: any }, defaultDirectives: any[]): void {
     if (this._columnCount < columns) {
       for (let i = 0; i < this._rowCount; i++) {
         for (let j = this._columnCount; j < columns; j++) {
           this.rows[i].push({
               component: defaultComponent,
               status: 'create',
-              directives: defaultDirectives
+              directives: defaultDirectives,
+              instance: defaultInstance
             });
         }
       }
@@ -284,7 +282,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
-  setRowCount(rows: number, defaultComponent: any, defaultDirectives: any[]): void {
+  setRowCount(rows: number, defaultComponent: any, defaultInstance: { [atrr: string]: any }, defaultDirectives: any[]): void {
     if (this._rowCount < rows) {
       for (let i = this._rowCount; i < rows; i++) {
         const row: TableItem[] = [];
@@ -292,7 +290,8 @@ export class TableComponent implements OnInit, AfterViewInit {
           row.push({
             component: defaultComponent,
             status: 'create',
-            directives: defaultDirectives
+            directives: defaultDirectives,
+            instance: defaultInstance
           });
         }
         this.rows.push(row);
@@ -306,7 +305,10 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addRow(component: any | any[], directives: any[] | Array<any[]>, pos = -1, ): void {
+  addRow(component: any | any[],
+         instance: { [atrr: string]: any } | Array<{ [atrr: string]: any }>,
+         directives: any[] | Array<any[]>,
+         pos = -1, ): void {
     pos = (this.rows.length < pos || pos === -1) ? this.rows.length : pos;
     const row: TableItem[] = [];
     if (component.constructor === Array) {
@@ -314,7 +316,8 @@ export class TableComponent implements OnInit, AfterViewInit {
         row.push({
           component: component[j],
           status: 'create',
-          directives: directives[j]
+          directives: directives[j],
+          instance: (instance  as Array<{ [atrr: string]: any }>)[j]
         });
       }
     } else {
@@ -322,7 +325,8 @@ export class TableComponent implements OnInit, AfterViewInit {
         row.push({
           component,
           status: 'create',
-          directives
+          directives,
+          instance
         });
       }
     }
@@ -341,14 +345,17 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.ngAfterViewInit();
   }
 
-  addColumn(component: any | any[], directives: any[] | Array<any[]>, pos = -1, ): void {
+  addColumn(component: any | any[],
+            instance: { [atrr: string]: any } | Array<{ [atrr: string]: any }>,
+            directives: any[] | Array<any[]>, pos = -1, ): void {
     pos = (this._columnCount < pos || pos === -1) ? this._columnCount : pos;
     if (component.constructor === Array) {
       for (let i = 0; i < this._rowCount; i++) {
         this.rows[i].splice(pos, 0, {
           component: component[i],
           status: 'create',
-          directives: directives[i]
+          directives: directives[i],
+          instance: (instance  as Array<{ [atrr: string]: any }>)[i]
         });
       }
     } else {
@@ -356,7 +363,8 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.rows[i].splice(pos, 0, {
           component,
           status: 'create',
-          directives
+          directives,
+          instance
         });
       }
     }
@@ -405,16 +413,17 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   cell(row: number, column: number): any {
     if (row < this._rowCount && row > -1 && row < this._columnCount && column > -1) {
-      return this.rows[row][column].example;
+      return this.rows[row][column].example.instance;
     }
   }
 
-  setCell(row: number, column: number, component: any, directives: any[]): void {
+  setCell(row: number, column: number, component: any, instance: { [atrr: string]: any }, directives: any[]): void {
     if (row < this._rowCount && row > -1 && row < this._columnCount && column > -1) {
       this.rows[row][column] = {
         component,
         status: 'create',
-        directives
+        directives,
+        instance
       };
     }
   }

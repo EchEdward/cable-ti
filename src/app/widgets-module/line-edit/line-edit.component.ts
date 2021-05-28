@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Subject, combineLatest } from 'rxjs';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 import { WidgetEvent } from '../interfaces/event-interface';
 import { TableCellRefDirective } from '../directives/table-cell-ref.directive';
 
@@ -16,18 +16,22 @@ export class LineEditComponent implements OnInit {
 
   @Input() eventStream$!: Subject<WidgetEvent>;
   @Input() tableCellRef!: TableCellRefDirective;
-  @Input() onlyNymeric = true;
+  @Input() onlyNymeric = false;
   @Input() decimals = 0;
   @Input() negative = false;
 
   currentText = '';
   directiveEventStream$: Subject<string> = new Subject();
 
-  constructor() {
+  constructor(private elRef: ElementRef) {
     // tslint:disable-next-line: deprecation
     this.directiveEventStream$.subscribe((txt: string) => {
       this._changeEvent(txt);
     });
+  }
+
+  getEventStream(): Observable<WidgetEvent> {
+    return this.eventStream$.asObservable();
   }
 
 
@@ -93,6 +97,7 @@ export class LineEditComponent implements OnInit {
 
   setText(text: string): void {
     this.currentText = text;
+    this.elRef.nativeElement.children[0].dispatchEvent(new Event('change'));
   }
 
 

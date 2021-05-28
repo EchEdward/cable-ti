@@ -5,6 +5,7 @@ import { LabelComponent } from '../widgets-module/label/label.component';
 import { LineEditComponent } from '../widgets-module/line-edit/line-edit.component';
 
 import { ToRedDirective } from '../widgets-module/directives/tored.directive';
+import { trigger } from '@angular/animations';
 
 
 @Component({
@@ -18,6 +19,8 @@ export class TableTestTabComponent {
   addRow(): void {
     if (this.childComponent) {
       this.childComponent.addRow([LineEditComponent, LineEditComponent, LineEditComponent, LineEditComponent],
+        [{onlyNymeric: true, decimals: 2, negative: true}, {onlyNymeric: true, decimals: 2, negative: true},
+          {onlyNymeric: true, decimals: 2, negative: true}, {onlyNymeric: true, decimals: 2, negative: true}],
          [[ToRedDirective], [ToRedDirective], [ToRedDirective], [ToRedDirective]]);
     }
   }
@@ -30,7 +33,7 @@ export class TableTestTabComponent {
 
   addColumn(): void {
     if (this.childComponent) {
-      this.childComponent.addColumn(LineEditComponent, [ToRedDirective]);
+      this.childComponent.addColumn(LineEditComponent, {onlyNymeric: true, decimals: 2}, [ToRedDirective]);
     }
   }
 
@@ -41,11 +44,11 @@ export class TableTestTabComponent {
   }
 
   setColumnCount(): void {
-    this.childComponent.setColumnCount(4, LineEditComponent, []);
+    this.childComponent.setColumnCount(4, LineEditComponent, {} , []);
   }
 
   setRowCount(): void {
-    this.childComponent.setRowCount(4, LineEditComponent, []);
+    this.childComponent.setRowCount(4, LineEditComponent, {onlyNymeric: true}, []);
   }
 
   setHeader(): void {
@@ -65,6 +68,7 @@ export class TableTestTabComponent {
   clearStyle(): void {
     // this.childComponent.clearStyle('theadcell');
     this.childComponent.setColumnWidth('%', [50, 30, 70]);
+    this.childComponent.cell(0, 0).setText('abs');
     // this.childComponent.setColumnWidth('px', 400, 1);
   }
 
