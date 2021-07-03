@@ -1,6 +1,9 @@
-import { AfterViewInit, Component, ComponentFactoryResolver, OnInit, QueryList, ViewChildren, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver,
+  OnInit, QueryList, ViewChildren, Renderer2, ComponentRef} from '@angular/core';
 import { TabRefDirective } from '../directives/tab-ref.directive';
 import { Subject, Observable } from 'rxjs';
+
+import {TabDirectiveType} from '../interfaces/types';
 
 
 interface Tab {
@@ -130,14 +133,14 @@ export class TabComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getTabComponent(pos: number): any {
+  getTabComponent(pos: number): object | undefined {
     if (pos < this.tabs.length && pos > -1) {
       return this.tabs[pos].example.instance;
     }
     return undefined;
   }
 
-  setTabComponent(pos: number, component: any): any {
+  setTabComponent<C>(pos: number, component: C): void {
     if (pos < this.tabs.length && pos > -1) {
       this.tabs[pos].component = component;
       this.tabs[pos].status = 'create';
@@ -180,7 +183,7 @@ export class TabComponent implements OnInit, AfterViewInit {
     });
   }
 
-  addDirective(pos: number, directives: any[] | any): void {
+  addDirective<D extends TabDirectiveType<TabComponent>>(pos: number, directives: D[] | D): void {
     if (pos < this.tabs.length && pos > -1) {
       if (directives.constructor === Array) {
         for (const direct of  directives) {
@@ -189,7 +192,7 @@ export class TabComponent implements OnInit, AfterViewInit {
         }
       } else {
         this.tabs[pos].directives.push(directives);
-        this.tabs[pos].dExamples?.push(new directives(this.tabs[pos].example, this.renderer));
+        this.tabs[pos].dExamples?.push(new (directives as D)(this.tabs[pos].example, this.renderer));
       }
     }
   }
