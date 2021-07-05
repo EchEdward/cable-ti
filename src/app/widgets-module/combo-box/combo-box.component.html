@@ -1,4 +1,4 @@
-<select [(ngModel)]="selectedValue" (change)="change()">
+<select [(ngModel)]="selectedValue" (change)="change()" [ngStyle]="_style.select">
 
     <option [ngValue]="item" *ngFor="let item of items">{{item}}</option>
     

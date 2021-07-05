@@ -58,7 +58,6 @@ export class TabComponent implements OnInit, AfterViewInit {
     return this.eventStream$.asObservable();
   }
 
-
   setStyle(el: 'tabbar' | 'tabbaritem' | 'tabbaritemactive' | 'tabcontent',
            style: { [atrr: string]: string }): void {
     this._style[el] = {...this._style[el], ...style};
