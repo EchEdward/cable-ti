@@ -1,6 +1,6 @@
 <select [(ngModel)]="selectedValue" (change)="change()" [ngStyle]="_style.select">
 
-    <option [ngValue]="item" *ngFor="let item of items">{{item}}</option>
+    <option [ngValue]="item" *ngFor="let item of getComboList()">{{item}}</option>
     
 </select>
 
