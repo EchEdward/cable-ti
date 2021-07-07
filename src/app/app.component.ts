@@ -3,6 +3,7 @@ import { TabComponent } from './widgets-module/tab/tab.component';
 import { ComboBoxComponent } from './widgets-module/combo-box/combo-box.component';
 import { TableComponent } from './widgets-module/table/table.component';
 import { TableTestTabComponent } from './table-test-tab/table-test-tab.component';
+import { ComboTestBoxComponent } from './combo-test-box/combo-test-box.component';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,8 @@ export class AppComponent {
     if (this.childComponent) {
       if (this.title === 1) {
         this.childComponent.addTab(this.title.toString(), TableTestTabComponent, {}, []);
+      } else if (this.title === 2) {
+        this.childComponent.addTab(this.title.toString(), ComboTestBoxComponent, {}, []);
       } else {
         this.childComponent.addTab(this.title.toString(), TableComponent, {}, []);
       }

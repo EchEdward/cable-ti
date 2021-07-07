@@ -87,6 +87,7 @@ export class ComboBoxComponent implements OnInit {
       item: Array.from(this.difference<string>(new Set([str]), this._items))
     });
     this._items.add(str);
+    this.emptyItemLogic();
   }
 
   addItems(itemList: string[]): void {
@@ -97,6 +98,7 @@ export class ComboBoxComponent implements OnInit {
     for (const item of itemList) {
       this._items.add(item);
     }
+    this.emptyItemLogic();
   }
 
   removeItem(str: string): void {
@@ -105,6 +107,7 @@ export class ComboBoxComponent implements OnInit {
       item: Array.from(this.intersection<string>(new Set([str]), this._items))
     });
     this._items.delete(str);
+    this.emptyItemLogic();
   }
 
   removeItems(itemList: string[]): void {
@@ -114,6 +117,16 @@ export class ComboBoxComponent implements OnInit {
     });
     for (const item of itemList) {
       this._items.delete(item);
+    }
+    this.emptyItemLogic();
+  }
+
+  private emptyItemLogic(): void {
+    if (this._items.size > 1) {
+      this._items.delete('');
+    } else if (this._items.size === 0) {
+      this._items.add('');
+      this.selectedValue = '';
     }
   }
 

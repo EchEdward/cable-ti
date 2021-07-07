@@ -7,11 +7,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { WidgetsModule } from './widgets-module/widgets.module';
 import { TableTestTabComponent } from './table-test-tab/table-test-tab.component';
+import { ComboTestBoxComponent } from './combo-test-box/combo-test-box.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TableTestTabComponent,
+    ComboTestBoxComponent,
   ],
   imports: [
     BrowserModule,
